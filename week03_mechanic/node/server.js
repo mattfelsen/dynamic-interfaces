@@ -25,10 +25,10 @@ net.createServer(function (socket) {
   });
 
   socket.on('error', function(error) {
-  	if (error.code == "ECONNRESET") {
-	    clients.splice(clients.indexOf(socket), 1);
+    if (error.code == "ECONNRESET") {
+      clients.splice(clients.indexOf(socket), 1);
       console.log('[EROR] Disconnection: ' + socket.name + ', total clients: ' + clients.length)
-  	}
+    }
   });
  
   // Remove the client from the list when it leaves
@@ -43,28 +43,28 @@ net.createServer(function (socket) {
 console.log("[INIT] Server running");
 
 function writeToClients(message) {
-	if (!clients.length) return;
+  if (!clients.length) return;
 
   console.log('[SEND] ' + message);
 
-	for (var i = 0; i < clients.length; i++) {
-		console.log("[SEND] Checking index "+ i +" of length "+ clients.length);
-		var socket = clients[i];
+  for (var i = 0; i < clients.length; i++) {
+    console.log("[SEND] Checking index "+ i +" of length "+ clients.length);
+    var socket = clients[i];
 
-		socket.write(message);
-	}
+    socket.write(message + "\n");
+  }
 }
 
-var state = true;
+// var state = true;
 
 var writeInterval = function() {
-  if (state) {
-    writeToClients("1");
-  } else {
-    writeToClients("0");
-  }
 
-  state = !state;
+  var r = parseInt(Math.random()*99);
+  var g = parseInt(Math.random()*99);
+  var b = parseInt(Math.random()*99);
+
+  writeToClients(r+","+g+","+b);
+
 }
 
-setInterval(writeInterval, 20*1000);
+setInterval(writeInterval, 1*1000);
