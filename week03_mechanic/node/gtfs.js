@@ -10,7 +10,7 @@ var root = builder.build("");
 var FeedMessage = root.transit_realtime.FeedMessage;
 
 // MTA Developer Key
-var mtaKey = "831ad07f2673a9d25f1960755314d527";
+var mtaKey = "****";
 var url = "http://datamine.mta.info/mta_esi.php?key="+mtaKey+"&feed_id=2";
 
 var stationID = "L02N"; // 6th Ave
