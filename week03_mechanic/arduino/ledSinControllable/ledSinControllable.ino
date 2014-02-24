@@ -1,13 +1,13 @@
 #include <WiFlyHQ.h>
 #include <Adafruit_NeoPixel.h>
-#define PIN 6
+#define PIN 7
 
 // WiFi credentials
-const char wifiSSID[] = "AP0N";
-const char wifiPassword[] = "";
+const char wifiSSID[] = "babymatt";
+const char wifiPassword[] = "pppppppp";
 
 // Server & port to connect to
-const char server[] = "192.168.1.124";
+const char server[] = "172.20.10.9";
 const int port = 9001;
 
 WiFly wifly;
@@ -36,7 +36,7 @@ void setup()
   wifly.begin(&Serial);
 
   /* Join wifi network if not already associated */
-  if (!wifly.isAssociated()) {
+  //if (!wifly.isAssociated()) {
     /* Setup the WiFly to connect to a wifi network */
     wifly.setSSID(wifiSSID);
     wifly.setPassphrase(wifiPassword);
@@ -44,7 +44,7 @@ void setup()
     wifly.enableDHCP();
     wifly.save();
     wifly.join();
-  }
+  //}
 
   wifly.setDeviceID("Wifly-TCP");
   wifly.setIpProtocol(WIFLY_PROTOCOL_TCP);
