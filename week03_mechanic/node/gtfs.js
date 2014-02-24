@@ -10,7 +10,7 @@ var root = builder.build("");
 var FeedMessage = root.transit_realtime.FeedMessage;
 
 // MTA Developer Key
-var mtaKey = "****";
+var mtaKey = "831ad07f2673a9d25f1960755314d527";
 var url = "http://datamine.mta.info/mta_esi.php?key="+mtaKey+"&feed_id=2";
 
 var stationID = "L02N"; // 6th Ave
@@ -87,10 +87,16 @@ var time = {
 	numSpokesLit: function() {
 		//how close the train is to arriving
 		// ie: if it's 1 minute away and the train is coming at intervals of 5 minutes,  the train is 80% here
-		var percent = 100 - (time.diff[0] / time.interval(time.full()) * 100); 
 		
+		//check that the train hasnt already arrived
+		if( time.diff[0] < 1){
+			var  percent = 100;
+		}else{
+		   var percent = 100 - (time.diff[0] / time.interval(time.full()) * 100); 
+		};
+				
 		var spokes = percent * 0.12; //the percentage converted to X/12
-		return Math.round(spokes); //the fraction rounded
+		spokes = Math.round(spokes); //the fraction rounded
 		return spokes; //the number of spokes that should be lit.
 		
 	},
@@ -136,7 +142,7 @@ http.get(url, function(res) {
                     var d = new Date(arrival * 1000);
 
 	                // console.log("i:", i, "id:", message.entity[i].id, "stop_id:", obj.stop_time_update[j].stop_id, "date:", d.toLocaleTimeString());
-					console.log("stop_id:", obj.stop_time_update[j].stop_id, "date:", d.toLocaleTimeString());
+					//console.log("stop_id:", obj.stop_time_update[j].stop_id, "date:", d.toLocaleTimeString());
 
 					//get time in minutes until next train and push difference between now + arrival to time.diff array
 					var arrivalMins = d.getHours()*60 + d.getMinutes();
@@ -154,6 +160,7 @@ http.get(url, function(res) {
 
         console.log('The train is now coming at intervals of ' + time.interval(time.full()) + ' minutes.');
         console.log('The next train is ' + time.diff[0] + ' minutes away.');
+        //console.log('The next next train is ' + time.diff[1] + ' minutes away.');
         console.log('Spokes 0 through ' + time.numSpokesLit() + ' should be lit.');
     });
     
