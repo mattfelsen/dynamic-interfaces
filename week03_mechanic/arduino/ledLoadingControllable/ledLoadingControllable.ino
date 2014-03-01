@@ -5,11 +5,11 @@
 #define NUM_SPOKES 12
 
 // WiFi credentials
-const char wifiSSID[] = "AP0N";
-const char wifiPassword[] = "";
+const char wifiSSID[] = "babymatt";
+const char wifiPassword[] = "pppppppp";
 
 // Server & port to connect to
-const char server[] = "192.168.1.114";
+const char server[] = "172.20.10.11";
 const int port = 9001;
 
 WiFly wifly;
@@ -93,10 +93,10 @@ void setLoadingSpokes(uint16_t number) {
 
   // update time & step variables
   float time = millis() / 100.0;
-  float step = TWO_PI / (NUM_SPOKES - number);
+  float step = TWO_PI / (NUM_SPOKES);
 
   // make 'em pulse
-  for (int i = NUM_SPOKES - number - 1; i >= 0; i--) {
+  for (int i = NUM_SPOKES - 1; i >= 0; i--) {
 
     float sinVal = sin(time + step * i);
     float sinNormalized = sinVal / 2 + 0.5;
@@ -105,9 +105,18 @@ void setLoadingSpokes(uint16_t number) {
     // difference between first/brightest spoke and the last/dimmest one
     sinNormalized = sinNormalized * sinNormalized * sinNormalized;
 
-    float rBri = sinNormalized * rLoading;
-    float gBri = sinNormalized * gLoading;
-    float bBri = sinNormalized * bLoading;
+    float rBri, gBri, bBri;
+
+    // check if the current spoke is a "loading" or "compelted"
+    if (i >= number) {
+      rBri = sinNormalized * rLoading;
+      gBri = sinNormalized * gLoading;
+      bBri = sinNormalized * bLoading;
+    } else {
+      rBri = sinNormalized * rComplete;
+      gBri = sinNormalized * gComplete;
+      bBri = sinNormalized * bComplete;
+    }
 
     for (uint16_t j = spokes[i][0]; j <= spokes[i][1]; j++) {
       strip.setPixelColor(j, rBri, gBri, bBri);
@@ -117,20 +126,8 @@ void setLoadingSpokes(uint16_t number) {
 }
 
 void setCompletedSpokes(uint16_t number) {
-  if (number < NUM_SPOKES) {
-    // if the spinner isn't completely loaded then...
-    // loop through number of completed spokes and set them to solid
-    // we actually start from spoke 12 and go down so that they fill in
-    // clockwise, the same direction of the spinner
-    for (int i = 0; i < number; i++) {
-      int currentSpoke = NUM_SPOKES - 1 - i;
-      for (uint16_t j = spokes[currentSpoke][0]; j <= spokes[currentSpoke][1]; j++) {
-        strip.setPixelColor(j, rComplete, gComplete, bComplete);
-      }
-    }
-  } else {
+  if (number == NUM_SPOKES) {
     // if it's completely loaded, make all the lights pulse together!
-    
     // loop through spokes from 0-end and set them to a color
     // with brightness determined by a sine wave
 
@@ -142,10 +139,6 @@ void setCompletedSpokes(uint16_t number) {
 
       float sinVal = sin(time);
       float sinNormalized = sinVal / 2 + 0.5;
-
-      // this line "compressess" the sine wave so there's a bigger
-      // difference between first/brightest spoke and the last/dimmest one
-//      sinNormalized = sinNormalized * sinNormalized * sinNormalized;
 
       float rBri = sinNormalized * rComplete;
       float gBri = sinNormalized * gComplete;
