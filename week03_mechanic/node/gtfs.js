@@ -13,10 +13,10 @@ var root = builder.build("");
 var FeedMessage = root.transit_realtime.FeedMessage;
 
 // MTA Developer Key
-var mtaKey = "****";
+var mtaKey = "831ad07f2673a9d25f1960755314d527";
 var url = "http://datamine.mta.info/mta_esi.php?key="+mtaKey+"&feed_id=2";
 
-var stationID = "L02N"; // 6th Ave
+var stationID = "L02S"; // 6th Ave
 // var stationID = "L08S"; // Bedford Av
 // var stationID = "L03"; // Union Square
 
@@ -37,6 +37,7 @@ var time = {
 	},
 	
 	diff: [],
+	nextTrainBaseline: 5,
 	
 	// accepts time as minutes. ie: 4:02AM = 60*4 + 02.
 	// returns the average time between trains in minutes for the given block of time
@@ -74,22 +75,37 @@ var time = {
 		// how close the train is to arriving
 		// ie: if it's 1 minute away and the train is coming at intervals of 5 minutes,  the train is 80% here
 		
+		// DEPRECATED AFTER MOVING TO SNAPSHOT OF NEXT TRAIN
 		// first let's find the first entry in the list that is not negative
 		// (negative entries refer to trains that have already left)
 		// if there are no non-negative entries, return 0
 		var index = 0;
 		while (time.diff[index] < 0) {
+			console.log("Checking index", index, " value is", time.diff[index]);
 			index++;
 		}
 		if (time.diff[index] == undefined) {
 			return 0;
 		}
+		console.log("Index for next train is", index);
+
+		if (time.diff[index] == 0) {
+			console.log("Setting new baseline to", time.diff[index+1]);
+			time.nextTrainBaseline = time.diff[index+1];
+		}
 
 		// check that the train hasn't already arrived
-		if (time.diff[index] < 1) {
-			var percent = 100;
-		} else {
-			var percent = 100 - (time.diff[0] / time.interval(time.full()) * 100); 
+		// if (time.diff[index] < 1) {
+		// 	var percent = 100;
+		// } else {
+		// 	var percent = 100 - (time.diff[0] / time.interval(time.full()) * 100); 
+		// }
+		var percent = 100 - (time.diff[index] / time.nextTrainBaseline) * 100; 
+		if (percent < 0) {
+			percent = 0;
+		}
+		if (percent > 100) {
+			percent = 100;
 		}
 				
 		var spokes = percent * 0.12; //the percentage converted to X/12
@@ -123,6 +139,11 @@ var run = function(){
 
 	http.get(url, function(res) {
 	    var data = [];
+
+	    res.on("error", function(e) {
+	    	console.log("[GET] Error: ", e);
+	    	console.log("[GET] Message: ", e.message);
+	    });
 	
 	    res.on("data", function(chunk) {
 	        data.push(chunk);
@@ -164,15 +185,17 @@ var run = function(){
 	            
 	        }
 
-			// console.log(time.diff);
-			// console.log('The train is now coming at intervals of ' + time.interval(time.full()) + ' minutes.');
-			// console.log('The next train is ' + time.diff[0] + ' minutes away.');		
-			// console.log('Spokes 0 through ' + time.numSpokesLit() + ' should be lit.');
+			console.log(time.diff);
 			server.send(time.numSpokesLit());
+			// console.log('Train intervals:',  time.interval(time.full()), 'minutes.');
+			console.log('Next train:', time.diff[0], 'minutes away.');
+			console.log('Baseline:', time.nextTrainBaseline, 'minutes away.');
+			console.log('Spokes:', + time.numSpokesLit(), 'of 12 should be lit.');
 	    });
 	    
 	});
 };
 		
 
-setInterval(run, 30*1000);
+setInterval(run, 15*1000);
+run();
